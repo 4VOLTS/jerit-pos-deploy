@@ -1,0 +1,12 @@
+# The operator console. Not a public page: it lists every shop on the
+# platform, their plans and their data sizes.
+#
+# This file asks crawlers to stay away and index.html repeats it in a meta
+# tag, because a crawler that never fetches robots.txt still parses the page.
+#
+# Neither is a security control — a request that ignores both still reaches
+# the server. What actually protects this is the `operator` custom claim,
+# checked again inside every Cloud Function behind it. This only keeps the
+# address out of search results, so nobody finds it by accident.
+User-agent: *
+Disallow: /

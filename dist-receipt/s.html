@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Terma &amp; Syarat</title>
+    <meta name="description" content="Terma dan syarat kedai untuk pembaikan dan pembelian." />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="POSFIX" />
+    <meta property="og:title" content="Terma &amp; Syarat" />
+    <meta property="og:description" content="Terma dan syarat kedai untuk pembaikan dan pembelian." />
+    <meta name="twitter:card" content="summary" />
+    <meta name="robots" content="noindex, nofollow" />
+    <!-- iOS draws its own underline on a detected phone number and CSS cannot
+         reach it (tried 17/9/2026). Detection is off; Receipt.jsx makes the
+         numbers tappable links itself, without the underline. -->
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#F1EFE5" />
+    <style>
+      /* No visible scrollbar anywhere (owner, 24/9/2026), as index.html:
+         scrolling is unchanged, only the bar is hidden. */
+      * { scrollbar-width: none; }
+      *::-webkit-scrollbar { display: none; }
+      html, body { margin: 0; padding: 0; background: #F1EFE5; }
+
+      /* Every size in Receipt.jsx is in em, relative to this one number. That
+         is what lets printing shrink the whole document by a single factor
+         instead of maintaining a second set of sizes. */
+      #receipt { font-size: 13px; }
+
+      @media print {
+        /* One sheet, portrait, with a margin a printer can actually reach. */
+        @page { size: A4 portrait; margin: 12mm; }
+
+        .no-print { display: none !important; }
+        html, body { background: #fff; }
+
+        /* The screen card is a card; on paper it is the page. */
+        #sheet { padding: 0 !important; }
+        #receipt {
+          /* --print-k is measured after render — see main.jsx. It shrinks the
+             document just enough to land on one page, and is floored so the
+             text never becomes unreadable. */
+          font-size: calc(13px * var(--print-k, 1));
+          max-width: none !important;
+          width: 100% !important;
+          margin: 0 !important;
+          border: none !important;
+          border-radius: 0 !important;
+          padding: 0 !important;
+          box-shadow: none !important;
+        }
+
+        /* Nothing should break across a page in the middle of a row. */
+        #receipt > * { break-inside: avoid; }
+
+        /* Print the exact greys, not the printer's idea of them. */
+        * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      }
+    </style>
+    <script type="module" crossorigin src="/assets/index-CzAHGh1o.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

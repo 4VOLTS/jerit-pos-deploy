@@ -1,0 +1,4 @@
+# The owner's console. Nothing here is for a search engine, and a shop's
+# staff list turning up in results would be a leak, not a feature.
+User-agent: *
+Disallow: /

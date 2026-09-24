@@ -1,0 +1,23 @@
+{
+  "projects": {
+    "default": "jerit-pos"
+  },
+  "targets": {
+    "jerit-pos": {
+      "hosting": {
+        "posfix": [
+          "jerit-pos"
+        ],
+        "console": [
+          "jerit-pos-console"
+        ],
+        "admin": [
+          "jerit-pos-admin"
+        ],
+        "receipt": [
+          "jerit-posfix-receipt"
+        ]
+      }
+    }
+  }
+}

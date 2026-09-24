@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#F7F5EC" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Jerit POS — Console</title>
+    <!-- The sign-in screen is the first thing anyone sees, and its logo used
+         to start downloading only after React had mounted and painted the
+         card — so the card appeared, sat there empty, then filled in. Asking
+         for it here starts the fetch while the HTML is still being read, in
+         parallel with the bundle instead of behind it. -->
+    <link rel="preload" as="image" href="/posfix-logo.png" />
+    <style>
+      /* No visible scrollbar anywhere (owner, 24/9/2026), as index.html:
+         scrolling is unchanged, only the bar is hidden. */
+      * { scrollbar-width: none; }
+      *::-webkit-scrollbar { display: none; }
+      /* Deliberately NOT the shop app's chrome. This is a back office read on
+         a desk as often as a phone, so the page scrolls normally instead of
+         being pinned like an installed app. */
+      html, body {
+        margin: 0;
+        padding: 0;
+        min-height: 100%;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background-color: #EDEBE2;
+        background-image: radial-gradient(800% 60% at 50% 0%, #F7F5EC 0%, #F1EFE5 55%, #EAE8DD 100%);
+        background-attachment: fixed;
+      }
+      * {
+        -webkit-tap-highlight-color: transparent;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        box-sizing: border-box;
+      }
+    </style>
+    <script type="module" crossorigin src="/assets/index-C-SZ3feT.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

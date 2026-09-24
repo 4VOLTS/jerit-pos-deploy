@@ -1,0 +1,62 @@
+# Deploy the POSFIX sites to Firebase Hosting on every push to main.
+#
+# This repo holds only BUILT files — the same files the live sites already
+# serve to every visitor — so it can be public, and a public repo's Actions
+# minutes are free. The source, the tests and the checks live in the private
+# repo; everything here was built and tested there before it was committed.
+#
+# Needs one repository secret, FIREBASE_SERVICE_ACCOUNT: the JSON key of a
+# service account with Firebase Hosting Admin on project jerit-pos. Secrets
+# are never passed to workflows started from a fork, so a pull request from a
+# stranger cannot deploy.
+
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-main
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Deploy the four sites
+        env:
+          FIREBASE_SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          printf '%s' "$FIREBASE_SA" > "$RUNNER_TEMP/sa.json"
+          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/sa.json"
+          npx --yes firebase-tools@13.35.1 deploy \
+            --only hosting:posfix,hosting:admin,hosting:console,hosting:receipt \
+            --project jerit-pos \
+            --non-interactive
+
+      - name: Remove the key even if the deploy failed
+        if: always()
+        run: rm -f "$RUNNER_TEMP/sa.json"
+
+      # The live sites must now serve the build that was just committed.
+      - name: Check the live sites serve this build
+        run: |
+          check() {
+            want=$(node -p "require('./$2/build.json').bundle")
+            got=$(curl -fsS "https://$1/build.json?t=$(date +%s)" | node -p "JSON.parse(require('fs').readFileSync(0,'utf8')).bundle")
+            echo "$1 serves $got, expected $want"
+            [ "$got" = "$want" ]
+          }
+          check posfix.jerit.my dist
+          check admin.posfix.jerit.my dist-admin
