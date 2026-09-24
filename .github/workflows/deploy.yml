@@ -49,14 +49,20 @@ jobs:
         if: always()
         run: rm -f "$RUNNER_TEMP/sa.json"
 
-      # The live sites must now serve the build that was just committed.
+      # The live sites must now serve the build that was just committed. The
+      # hosting CDN can take a little while to pick up a new release, so each
+      # site gets up to two minutes before this counts as a failure.
       - name: Check the live sites serve this build
         run: |
           check() {
             want=$(node -p "require('./$2/build.json').bundle")
-            got=$(curl -fsS "https://$1/build.json?t=$(date +%s)" | node -p "JSON.parse(require('fs').readFileSync(0,'utf8')).bundle")
-            echo "$1 serves $got, expected $want"
-            [ "$got" = "$want" ]
+            for i in $(seq 1 24); do
+              got=$(curl -fsS "https://$1/build.json?t=$(date +%s%N)" | node -p "JSON.parse(require('fs').readFileSync(0,'utf8')).bundle" || true)
+              echo "$1 serves $got, expected $want"
+              [ "$got" = "$want" ] && return 0
+              sleep 5
+            done
+            return 1
           }
           check posfix.jerit.my dist
           check admin.posfix.jerit.my dist-admin
