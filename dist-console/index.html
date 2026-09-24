@@ -5,7 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#F7F5EC" />
     <meta name="robots" content="noindex, nofollow" />
-    <title>Jerit POS — Console</title>
+    <title>POSfix Console</title>
+    <!-- Installed to a phone's home screen it opens like an app: its own icon,
+         no browser bar (owner, 24/9/2026). Same pieces as the admin site, each
+         for the same reason: iOS reads the apple-* tags and ignores the
+         manifest's display mode; Chrome and Android read the manifest and
+         need a service worker before "Add to Home Screen" installs an app
+         rather than a shortcut. Status bar style "default", not
+         black-translucent: see the floating nav note in CLAUDE.md for what
+         translucent did to the bottom gap on an installed iPhone. -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Console" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.json" />
+    <script>
+      // The same worker the counter and admin sites run (scripts/sw.mjs):
+      // network first, so a deploy shows up on the next open, and the console
+      // still opens with no signal. Registered after load, and a new worker
+      // taking over reloads once only within the first 15 seconds — the same
+      // rule as admin/index.html.
+      if ("serviceWorker" in navigator) {
+        var had = !!navigator.serviceWorker.controller;
+        var opened = Date.now();
+        navigator.serviceWorker.addEventListener("controllerchange", function () {
+          if (had && Date.now() - opened < 15000) window.location.reload();
+        });
+        window.addEventListener("load", function () {
+          navigator.serviceWorker.register("/sw.js").catch(function () {});
+        });
+      }
+    </script>
     <!-- The sign-in screen is the first thing anyone sees, and its logo used
          to start downloading only after React had mounted and painted the
          card — so the card appeared, sat there empty, then filled in. Asking
@@ -17,13 +48,15 @@
          scrolling is unchanged, only the bar is hidden. */
       * { scrollbar-width: none; }
       *::-webkit-scrollbar { display: none; }
-      /* Deliberately NOT the shop app's chrome. This is a back office read on
-         a desk as often as a phone, so the page scrolls normally instead of
-         being pinned like an installed app. */
+      /* Pinned like an installed app since the redesign (24/9/2026): each
+         page scrolls inside its own frame, so the body must not rubber-band
+         or drag the top and bottom bars with it. */
       html, body {
         margin: 0;
         padding: 0;
         min-height: 100%;
+        overscroll-behavior: none;
+        -webkit-text-size-adjust: 100%;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         background-color: #EDEBE2;
         background-image: radial-gradient(800% 60% at 50% 0%, #F7F5EC 0%, #F1EFE5 55%, #EAE8DD 100%);
@@ -35,7 +68,7 @@
         box-sizing: border-box;
       }
     </style>
-    <script type="module" crossorigin src="/assets/index-C-SZ3feT.js"></script>
+    <script type="module" crossorigin src="/assets/index-CPOPAFKO.js"></script>
   </head>
   <body>
     <div id="root"></div>
