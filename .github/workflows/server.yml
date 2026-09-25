@@ -1,0 +1,98 @@
+# Deploy the SERVER half of POSFIX — Firestore rules, Cloud Functions and
+# Storage rules — by hand, from the private source repo.
+#
+# Why this exists (25/9/2026): the private repo's own Actions minutes ran out
+# until 1/10, and Billing needs new Cloud Functions now. The source is NOT
+# copied into this public repo: this job checks the private repo out into the
+# runner with a read-only token (secret SOURCE_TOKEN), deploys from there, and
+# the runner is thrown away. Nothing from the source is committed here.
+#
+# Needs two repository secrets:
+#   FIREBASE_SERVICE_ACCOUNT  the key the hosting deploy already uses; it also
+#                             needs the roles that deploy rules and functions
+#   SOURCE_TOKEN              a fine-grained token with Contents: read-only on
+#                             4VOLTS/jerit-pos, nothing else
+#
+# Manual only (Actions tab > Server > Run workflow). Never runs on a push, and
+# secrets are never given to a workflow started from a fork.
+#
+# Rules first and alone, then functions, then Storage rules — the order the
+# private repo's deploy.yml uses, and for its reason: one missing permission on
+# the functions side must not take the security rules down with it.
+
+name: Server
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-server
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the private source (read-only)
+        uses: actions/checkout@v4
+        with:
+          repository: 4VOLTS/jerit-pos
+          ref: main
+          token: ${{ secrets.SOURCE_TOKEN }}
+          path: src
+          fetch-depth: 1
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Show which commit is being deployed
+        working-directory: src
+        run: git log -1 --format='%h %s'
+
+      - name: Write the key
+        env:
+          FIREBASE_SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: printf '%s' "$FIREBASE_SA" > "$RUNNER_TEMP/sa.json"
+
+      - name: Deploy Firestore security rules
+        working-directory: src
+        run: |
+          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/sa.json"
+          npx --yes firebase-tools@13.35.1 deploy \
+            --only firestore:rules \
+            --project jerit-pos \
+            --non-interactive
+
+      - name: Deploy Cloud Functions
+        working-directory: src
+        run: |
+          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/sa.json"
+          npm --prefix functions ci || npm --prefix functions install
+          npx --yes firebase-tools@13.35.1 deploy \
+            --only functions \
+            --project jerit-pos \
+            --non-interactive \
+            --force
+
+      # Separate and allowed to fail: it needs a different permission
+      # (firebasestorage.defaultBucket.get) that the key may not carry. The
+      # old Storage rules still let an owner upload an image slip under 2 MB
+      # and the operator read it, so Billing works without this step.
+      - name: Deploy Storage rules
+        working-directory: src
+        continue-on-error: true
+        run: |
+          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/sa.json"
+          npx --yes firebase-tools@13.35.1 deploy \
+            --only storage \
+            --project jerit-pos \
+            --non-interactive
+
+      - name: Remove the key even if the deploy failed
+        if: always()
+        run: rm -f "$RUNNER_TEMP/sa.json"
