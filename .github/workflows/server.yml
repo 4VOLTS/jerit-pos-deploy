@@ -13,7 +13,8 @@
 #   SOURCE_TOKEN              a fine-grained token with Contents: read-only on
 #                             4VOLTS/jerit-pos, nothing else
 #
-# Manual only (Actions tab > Server > Run workflow). Never runs on a push, and
+# Manual only (Actions tab > Server > Run workflow). It asks what to deploy:
+# "rules only" (the default) or "rules, functions and storage". Never runs on a push, and
 # secrets are never given to a workflow started from a fork.
 #
 # Rules first and alone, then functions, then Storage rules — the order the
@@ -24,6 +25,14 @@ name: Server
 
 on:
   workflow_dispatch:
+    inputs:
+      part:
+        description: "What to deploy"
+        type: choice
+        options:
+          - rules only
+          - rules, functions and storage
+        default: rules only
 
 concurrency:
   group: deploy-server
@@ -68,7 +77,11 @@ jobs:
             --project jerit-pos \
             --non-interactive
 
+      # "rules only" is the default (25/9/2026): the job ticket needs only
+      # firestore.rules, and Cloud Functions (Billing's among them) wait
+      # for the owner's word.
       - name: Deploy Cloud Functions
+        if: ${{ inputs.part == 'rules, functions and storage' }}
         working-directory: src
         run: |
           export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/sa.json"
@@ -84,6 +97,7 @@ jobs:
       # old Storage rules still let an owner upload an image slip under 2 MB
       # and the operator read it, so Billing works without this step.
       - name: Deploy Storage rules
+        if: ${{ inputs.part == 'rules, functions and storage' }}
         working-directory: src
         continue-on-error: true
         run: |
