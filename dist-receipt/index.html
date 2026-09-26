@@ -29,8 +29,16 @@
         .no-print { display: none !important; }
         html, body { background: #fff; }
 
-        /* The screen card is a card; on paper it is the page. */
-        #sheet { padding: 0 !important; }
+        /* The screen card is a card; on paper it is the page. The sheet
+           behind it is the beige screen ground, at least one screen tall:
+           printed as it is, it came out as a beige block under a short
+           ticket (owner, 25/9/2026). On paper it is white and only as tall
+           as what it holds. print-sheet-proof. */
+        #sheet {
+          padding: 0 !important;
+          background: #fff !important;
+          min-height: 0 !important;
+        }
         #receipt {
           /* --print-k is measured after render — see main.jsx. It shrinks the
              document just enough to land on one page, and is floored so the
