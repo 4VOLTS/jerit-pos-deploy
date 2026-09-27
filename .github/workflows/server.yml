@@ -14,7 +14,8 @@
 #                             4VOLTS/jerit-pos, nothing else
 #
 # Manual only (Actions tab > Server > Run workflow). It asks what to deploy:
-# "rules only" (the default) or "rules, functions and storage". Never runs on a push, and
+# "rules only" (the default), "rules and storage", or "rules, functions and
+# storage". Never runs on a push, and
 # secrets are never given to a workflow started from a fork.
 #
 # Rules first and alone, then functions, then Storage rules — the order the
@@ -31,6 +32,7 @@ on:
         type: choice
         options:
           - rules only
+          - rules and storage
           - rules, functions and storage
         default: rules only
 
@@ -92,17 +94,22 @@ jobs:
             --non-interactive \
             --force
 
-      # Separate and allowed to fail: it needs a different permission
-      # (firebasestorage.defaultBucket.get) that the key may not carry. The
-      # old Storage rules still let an owner upload an image slip under 2 MB
-      # and the operator read it, so Billing works without this step.
+      # Separate, after the Firestore rules, so it can never hold them back.
+      # Until 27/9/2026 this step failed on a 403 every time: with no bucket
+      # named, firebase-tools asks the Storage API for the default one
+      # (firebasestorage.defaultBucket.get), a role the key does not carry,
+      # so storage.rules never went out and the OLD rules let any staff
+      # phone of a shop read the owner's payment slips (security review).
+      # firebase.storage.json in the source names the bucket; with it the
+      # deploy only talks to the Rules API, as the Firestore step does.
+      # No longer allowed to fail quietly: a red run is the signal.
       - name: Deploy Storage rules
-        if: ${{ inputs.part == 'rules, functions and storage' }}
+        if: ${{ inputs.part != 'rules only' }}
         working-directory: src
-        continue-on-error: true
         run: |
           export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/sa.json"
           npx --yes firebase-tools@13.35.1 deploy \
+            --config firebase.storage.json \
             --only storage \
             --project jerit-pos \
             --non-interactive
