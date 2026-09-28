@@ -1,6 +1,6 @@
 {
-  "name": "POSfix Admin",
-  "short_name": "POSfix Admin",
+  "name": "POSFIX Admin",
+  "short_name": "POSFIX Admin",
   "description": "Shop owner console — staff, PINs, inventory and figures.",
   "start_url": "/",
   "scope": "/",
