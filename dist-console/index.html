@@ -52,6 +52,15 @@
          scrolling is unchanged, only the bar is hidden. */
       * { scrollbar-width: none; }
       *::-webkit-scrollbar { display: none; }
+      /* Native-app text (owner, 1/10/2026): nothing the app itself draws can
+         be highlighted, dragged or long-pressed into a copy menu, as in an
+         installed app. Only what a person types stays selectable: a box, a
+         text area, an editable block. A Copy button is unaffected (it writes
+         the clipboard, it does not select). Replaces POSS's rule that made
+         buttons selectable. The public receipt and terms pages keep normal
+         web text: a customer may copy from them. */
+      html, body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+      input, textarea, [contenteditable="true"], [contenteditable=""] { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
       /* Pinned like an installed app since the redesign (24/9/2026): each
          page scrolls inside its own frame, so the body must not rubber-band
          or drag the top and bottom bars with it. */
@@ -73,7 +82,7 @@
         box-sizing: border-box;
       }
     </style>
-    <script type="module" crossorigin src="/assets/index-B54if580.js"></script>
+    <script type="module" crossorigin src="/assets/index-rimFPxmM.js"></script>
   </head>
   <body>
     <div id="root"></div>

@@ -136,6 +136,15 @@
          trackpad and keyboard all still scroll. */
       * { scrollbar-width: none; }
       *::-webkit-scrollbar { display: none; }
+      /* Native-app text (owner, 1/10/2026): nothing the app itself draws can
+         be highlighted, dragged or long-pressed into a copy menu, as in an
+         installed app. Only what a person types stays selectable: a box, a
+         text area, an editable block. A Copy button is unaffected (it writes
+         the clipboard, it does not select). Replaces POSS's rule that made
+         buttons selectable. The public receipt and terms pages keep normal
+         web text: a customer may copy from them. */
+      html, body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+      input, textarea, [contenteditable="true"], [contenteditable=""] { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
       /* Elak "bounce"/overscroll supaya rasa macam app sebenar */
       html, body {
         margin: 0;
@@ -181,9 +190,6 @@
         -webkit-tap-highlight-color: transparent !important;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
       }
-      input, textarea, select, button {
-        -webkit-user-select: text;
-      }
       
       /* --- KOD PRINT --- */
       @media print {
@@ -198,7 +204,7 @@
       }
     </style>
     
-    <script type="module" crossorigin src="/assets/index-CJpH7It0.js"></script>
+    <script type="module" crossorigin src="/assets/index-D1qnupDE.js"></script>
   </head>
   <body>
     <!-- ── STARTUP WALLPAPER ─────────────────────────────────────
